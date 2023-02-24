@@ -1,36 +1,39 @@
 # pylint: disable=missing-module-docstring
 
-import sys
 import urllib.parse
 import requests
+import datetime
 
-BASE_URI = "https://weather.lewagon.com"
+BASE_URI = "http://api.openweathermap.org"
+API_KEY = 'e23165569272739e442324988e8ea94c'
 
-
-def weather_forecast(lat, lon):
-    '''Return a 5-day weather forecast for the city, given its latitude and longitude.'''
-    url = f"https://weather.lewagon.com/2.5/forecast/daily?lat={lat}&lon={lon}cnt=5"
 
 def search_city(query):
     '''
     Look for a given city. If multiple options are returned, have the user choose between them.
     Return one city (or None)
     '''
-    url = f"https://weather.lewagon.com/geo/1.0/direct?q={query}"
-    response = requests.get(url).json()
+    response = requests.get(BASE_URI + "/geo/1.0/direct",
+                            params={'q': query, 'appid':API_KEY},).json()
     city = response[0]
     if query.capitalize() == city['name']:
-        print(f"Here's the weather in {city['name']}")
-        weather_forecast(city['lat'], city['lon'])
-    else:
-        main()
+        return city
+    return main()
+
+def weather_forecast(lat, lon):
+    '''Return a 5-day weather forecast for the city, given its latitude and longitude.'''
+    response = requests.get(BASE_URI + "/data/3.0/onecall",
+                            params={'lat': lat, 'lon': lon, 'exclude':'current,minutely,hourly', 'units': 'metric', 'appid':API_KEY},).json()
+    print(f"Here's the weather in {response['timezone'].split('/')[1]}")
+    for i, day in enumerate(response['daily']):
+        if i <5:
+            print(f"{datetime.date.today()}: {day['weather'][0]['description'].capitalize()} ({int(day['temp']['day'])+1}°C)")
 
 def main():
     '''Ask user for a city and display weather forecast'''
-    query = input("Good Day master! How can I serve you? Please enter a city name.\n> ")
+    query = input("Good Day master! Please enter a city name.\n> ")
     city = search_city(query)
-
-    # TODO: Display weather forecast for a given city
+    forecast = weather_forecast(city['lat'], city['lon'])
     pass  # YOUR CODE HERE
 
 if __name__ == '__main__':
