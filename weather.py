@@ -43,10 +43,11 @@ def main():
     if city:
         forecast = weather_forecast(city['lat'], city['lon'])
         print(f"Here's the weather in {city['name']}")
-        for day in forecast:
-            description = day['weather'][0]['description'].capitalize()
-            temp = int(day['temp']['day'])
-            print(f"{datetime.date.today()}: {description} ({temp}°C)")
+        for i, day in enumerate(forecast):
+            if i < 5:
+                description = day['weather'][0]['description'].capitalize()
+                temp = int(day['temp']['day'])
+                print(f"{datetime.date.today()}: {description} ({temp}°C)")
 
 if __name__ == '__main__':
     try:
